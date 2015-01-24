@@ -41,7 +41,7 @@ Docker build for s3fs v1.78.
 
          /usr/bin/s3fs -f -d -o allow_other -o use_cache=/tmp -o iam_role=<iam role> <bucket> <mountpoint>
 
-* Note
+Note
 ----
 
   You need to add extra sys-capabilities to use fuse:
