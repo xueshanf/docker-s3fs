@@ -1,7 +1,7 @@
 docker-s3fs
 ===========
 
-Docker build for s3fs v1.78. 
+Docker build for s3fs v1.79. 
 
 * To run the image:
 
