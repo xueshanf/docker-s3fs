@@ -19,7 +19,7 @@ Docker build for s3fs v1.79.
         chmod 400 /root/.s3fs
         /usr/bin/s3fs -o passwd_file=/root/.s3fs -o allow_other -o use_cache=/tmp <bucket> <mountpoint>
 
-  The bucket name should not be in s3://.. format, otherwise you get Transport endpoint is not connected error. 
+  You should not include _s3://_ in the bucket name, otherwise, you get _Transport endpoint is not connected error_.
 
 * Usage exmaple
 
