@@ -8,7 +8,7 @@ docker-s3fs
 
 ### <a name="docker-engine-after-1.10" ></a> Docker engine after 1.10
 
-Docker engine 1.10 added a new feature which allows containers to share the host mount namespace. This feature makes it possible to mount a s3fs container file system to a host file system through a shared mount, creating a network storage with S3 backend. 
+Docker engine 1.10 added a new feature which allows containers to share the host mount namespace. This feature makes it possible to mount a s3fs container file system to a host file system through a shared mount, providing a persistent network storage with S3 backend. 
 
 **Prerequsites**
 
@@ -24,7 +24,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 
 		# mkdir /mnt/mydata
 		# mount --bind /mnt/mydata /mnt/mydata
-		# mmount --make-shared /mnt/mydata
+		# mount --make-shared /mnt/mydata
 		# findmnt -o TARGET,PROPAGATION /mnt/mydata
 		TARGET            PROPAGATION
 		/mnt/mydata		 shared
@@ -33,7 +33,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 
 		# echo "<accessId>:<acessSecrect>" > /root/.s3fs
 
-**Run the container**
+**Run the S3fs container**
 
 Create a systemd unit /etc/systemd/system/s3fs.service with the following content:
 
@@ -50,14 +50,15 @@ Create a systemd unit /etc/systemd/system/s3fs.service with the following conten
 	RestartSec=5
 	Restart=always
 	
+It is important to use the **-f** flag to keep the s3fs container running in foreground. 
 
 Start the unit:
 
 	# systemctl start s3fs.service
 	
-Now you should be able to see file system under /mnt/data on host. Changes you make there will be reflected on the S3 bucket, and shared by other hosts using the system s3fs.service unit. 
+Now you should be able to see file system under /mnt/mydata on host. Changes you make there will be reflected on the S3 bucket, and shared by other hosts using the system s3fs.service unit. 
 
-Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/data on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
+Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/mydata on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
 
 ### <a name="docker-engine-before-1.10" ></a> Docker engine before 1.10
 
