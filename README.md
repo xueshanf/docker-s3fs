@@ -50,6 +50,11 @@ Create a systemd unit /etc/systemd/system/s3fs.service with the following conten
 	RestartSec=5
 	Restart=always
 	
+
+Start the unit:
+
+	# systemctl start s3fs.service
+	
 Now you should be able to see file system under /mnt/data on host. Changes you make there will be reflected on the S3 bucket, and shared by other hosts using the system s3fs.service unit. 
 
 Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/data on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
