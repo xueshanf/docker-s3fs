@@ -16,7 +16,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 * If the docker service is managed by systemd, you need to remove __MountFlags=slave__. See [issue](https://github.com/docker/docker/pull/22806). Example to fix this on CoreOS:
 
 		# cp /usr/lib/systemd/system/docker.service /etc/systemd/system/
-		# sed -i 's/MountFlags=slave//' /etc/systemd/system/docker.service
+		# sed -i 's/MountFlags=slave/#MountFlags=slave/' /etc/systemd/system/docker.service
 		# systemctl daemon-reload
 		# systemctl restart docker.service
 		
