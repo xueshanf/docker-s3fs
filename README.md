@@ -1,41 +1,92 @@
 docker-s3fs
 ===========
 
-Docker build for s3fs v1.79. 
+###**[S3fs][s3fs]** docker build for version 1.80. 
 
-* To run the image:
+- [Docker engine after 1.10](#docker-egnine-after-1.10)
+- [Docker engine before 1.10](#docker-engine-before-1.10)
+
+### <a name="docker-engine-after-1.10" ></a> Docker engine after 1.10
+
+Docker engine 1.10 added a new feature which allows containers to share the host mount namespace. This feature makes it possible to mount a s3fs container file system to a host file system through a shared mount, creating a network storage with S3 backend. 
+
+**Prerequsites**
+
+* Docker engine 1.10.x
+* If the docker service is managed by systemd, you need to remove __MountFlags=slave__. See [issue](https://github.com/docker/docker/pull/22806). Example to fix this on CoreOS:
+
+		# cp /usr/lib/systemd/system/docker.service /etc/systemd/system/
+		# sed -i 's/MountFlags=slave//' /etc/systemd/system/docker.service
+		# systemctl daemon-reload
+		# systemctl restart docker.service
+		
+* Make a shared mountpoint on host
+
+		# mkdir /mnt/mydata
+		# mount --bind /mnt/mydata /mnt/mydata
+		# mmount --make-shared /mnt/mydata
+		# findmnt -o TARGET,PROPAGATION /mnt/mydata
+		TARGET            PROPAGATION
+		/mnt/mydata		 shared
+		
+* Create AWS credential file (or use role-based crentials)
+
+		# cat cat accessId:acessSecrect > /root/.s3fs
+
+**Run the container**
+
+Create a systemd unit /etc/systemd/system/s3fs.service with the following content:
+
+	[Unit]
+	Description=S3fs Service
+
+	[Service]
+	ExecStartPre=-/usr/bin/docker kill %n
+	ExecStartPre=-/usr/bin/docker rm %n
+	ExecStart=/usr/bin/docker run --rm --name %n -v /root/.s3fs:/root/.s3fs --cap-add mknod --cap-add sys_admin --device=/dev/fuse -v /mnt/mydata:/m
+	nt/mydata:shared xueshanf/s3fs /usr/bin/s3fs -f -o allow_other -o use_cache=/tmp -o passwd_file=/root/.s3fs <bucket> /mnt/mydata
+	TimeoutStartSec=5min
+	ExecStop=-/usr/bin/docker stop %n
+	RestartSec=5
+	Restart=always
+	
+Now you should be able to see file system under /mnt/data on host. Changes you make there will be reflected on the S3 bucket, and shared by other hosts using the system s3fs.service unit. 
+
+Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/data on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
+
+### <a name="docker-engine-before-1.10" ></a> Docker engine before 1.10
+
+Before Docker version 1.10, s3fs mounted volumes (FUSE-based file system) in the container are not visiable from docker host through -v `<hostvol`>:`<s3fsvol`> option, nor from other containsers through --volumes-from `<containername`>.  However, you can still copy data out and make it available on the docker hosts and other containers. 
+
+The following examples show how to start s3fs container with EC2 IAM role-based credential or with an IAM user that has permission to access your AWS s3 bucket. 
+
+Note: You should not include _s3://_ in the bucket name, otherwise, you get _Transport endpoint is not connected error_.
+
+* Run the image with IAM role-based credential
 
         docker pull xueshanf/s3fs
-        docker run --rm --cap-add mknod --cap-add sys_admin --device=/dev/fuse -it xueshanf/s3fs
-
-  You are dropped to /bin/bash command inside of the container.
-
-  If the system is built on AWS with role-based IAM profile, you can run the s3fs like so:
-
-        /usr/bin/s3fs -o allow_other -o use_cache=/tmp -o iam_role=<iam role> <bucket> <mountpoint>
-
-  Or save accessId:acessSecrect to a file, e.g. /root/.s3fs, then:
-
-        chmod 400 /root/.s3fs
-        /usr/bin/s3fs -o passwd_file=/root/.s3fs -o allow_other -o use_cache=/tmp <bucket> <mountpoint>
-
-  You should not include _s3://_ in the bucket name, otherwise, you get _Transport endpoint is not connected error_.
-
-* Usage exmaple
-
- s3fs mounted volumes (FUSE-based file system) in the container are not visiable from docker host through -v `<hostvol`>:`<s3fsvol`> option, nor from other containsers through --volumes-from `<containername`>.
-
-  However, you can still copy data out and make it available on the docker hosts and other containers. Here is an example.
-
-  Mount an entire bucket and copy files to a bind-mount volume _/opt/data_ on host:
-
-        docker run --rm --cap-add mknod --cap-add sys_admin --device=/dev/fuse -v /opt/data:/data -it xueshanf/s3fs
-        /usr/bin/s3fs -o allow_other -o use_cache=/tmp -o iam_role=controller mybucket /mnt
-        cp -r /mnt/ /data
+        docker run --rm --name s3fs-container --cap-add mknod --cap-add sys_admin --device=/dev/fuse xueshanf/s3fs /usr/bin/s3fs -o allow_other -o use_cache=/tmp -o iam_role=<role name> <bucket> /mnt/mydata
     
-  To umount:
+* Run the image as an IAM user 
 
-        umount /mnt
+		$ cat accessId:acessSecrect > /root/.s3fs
+		$ chmod 400 /root/.s3fs
+		$ docker run -v /root/.s3fs:/root/.s3fs --name s3fs-container --rm --cap-add mknod --cap-add sys_admin --device=/dev/fuse xueshanf/s3fs /usr/bin/s3fs -o allow_other -o use_cache=/tmp -o passwd_file=/root/.s3fs <bucket> /mnt/mydata
+		
+Keep the container running in the above foreground window, start another terminal to run the following example operations. 
+
+  * List file system and copy a file
+
+ 		$ docker exec s3fs-container ls /mnt/mydata
+ 		$ docker exec s3fs-container cat /mnt/mydata/file1 > /tmp/file1
+ 		
+* Mount an entire bucket and copy files to a bind-mount volume _/opt/data_ on host:
+
+        $ docker run --rm --cap-add mknod --cap-add sys_admin --device=/dev/fuse -v /root/.s3fs:/root/.s3fs -v /opt/data:/data -it xueshanf/s3fs
+        root@88c090451cce:/# /usr/bin/s3fs -o allow_other -o use_cache=/tmp -o iam_role=controller mybucket /mnt/mydata
+        cp -r /mnt/mydata /data
+        umount /mnt/mydata
+        exit
         
 * Debugging mount problems
 
@@ -48,7 +99,8 @@ Note
 
         --cap-add mknod --cap-add sys_admin --device=/dev/fuse
 
-  You can always run it with `--privileged`.  However this should be avoided if possible.  Run with the
-  more restricted set above.
+  You can always run it with `--privileged`.  However this should be avoided if possible.  Run with the more restricted set above.
 
   See [Issue 6616](https://github.com/docker/docker/issues/6616).
+
+[s3fs]: https://github.com/s3fs-fuse/s3fs-fuse
