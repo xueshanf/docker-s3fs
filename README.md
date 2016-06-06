@@ -44,7 +44,7 @@ Create a systemd unit /etc/systemd/system/s3fs.service with the following conten
 	[Service]
 	ExecStartPre=-/usr/bin/docker kill %n
 	ExecStartPre=-/usr/bin/docker rm %n
-	ExecStart=/usr/bin/docker run --rm --name %n -v /root/.s3fs:/root/.s3fs --cap-add mknod --cap-add sys_admin --device=/dev/fuse -v /mnt/mydata:/m
+	ExecStart=/usr/bin/docker run --rm --name %n -v /root/.s3fs:/root/.s3fs --security-opt apparmor:unconfined --cap-add mknod --cap-add sys_admin --device=/dev/fuse -v /mnt/mydata:/m
 	nt/mydata:shared xueshanf/s3fs /usr/bin/s3fs -f -o allow_other -o use_cache=/tmp -o passwd_file=/root/.s3fs <bucket> /mnt/mydata
 	TimeoutStartSec=5min
 	ExecStop=-/usr/bin/docker stop %n
