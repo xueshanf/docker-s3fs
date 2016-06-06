@@ -32,6 +32,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 * Create AWS credential file (or use role-based crentials)
 
 		# echo "<accessId>:<acessSecrect>" > /root/.s3fs
+		# chmod 400 /root/.s3fs
 
 **Run the S3fs container**
 
