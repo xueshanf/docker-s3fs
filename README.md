@@ -35,6 +35,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 		# chmod 400 /root/.s3fs
 
 **Run the S3fs container**
+***As a systemd service***
 
 Create a systemd unit /etc/systemd/system/s3fs.service with the following content:
 
@@ -60,6 +61,18 @@ Start the unit:
 Now you should be able to see file system under /mnt/mydata on host. Changes you make there will be reflected on the S3 bucket, and shared by other hosts using the system s3fs.service unit. 
 
 Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/mydata on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
+
+***With docker-compose***
+
+Get [docker-compose](https://docs.docker.com/compose/install/)
+
+You can use the `docker-compose.yml` for starting the s3fs container with a simple command
+				docker-compose up -d
+
+You have to edit it first and set `AWSACCESSKEYID` and `AWSSECRETACCESSKEY` and replace `S3_BUCKET_NAME` with the name of your S3 bucket.
+
+For mounting the S3 folder into other containers, you have to define the host mount path as a volume. `volumes-from` does _not_ work with a FUSE-based mount.
+So this way the s3fs container mounts the S3 bucket to a folder on the host which is then mapped into other containers.
 
 ### <a name="docker-engine-before-1.10" ></a> Docker engine before 1.10
 

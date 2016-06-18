@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  s3fs:
+    image: xueshanf/s3fs:latest
+    environment:
+      - AWSACCESSKEYID: FOOBAR
+      - AWSSECRETACCESSKEY: FOOBARBAZ
+    cap_add:
+      - MKNOD
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    devices:
+      - /dev/fuse
+    volumes:
+      - /mnt/mydata:/mnt:shared
+    command: /usr/bin/s3fs -f -o allow_other -o use_cache=/tmp S3_BUCKET_NAME /mnt/
