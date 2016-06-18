@@ -36,7 +36,7 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 
 **Run the S3fs container**
 
-**As a systemd service
+**As a systemd service**
 
 Create a systemd unit /etc/systemd/system/s3fs.service with the following content:
 
@@ -68,7 +68,8 @@ Note that, if you previously created the files in the S3 bucket with other tools
 Get [docker-compose](https://docs.docker.com/compose/install/)
 
 You can use the `docker-compose.yml` for starting the s3fs container with a simple command
-				docker-compose up -d
+
+	docker-compose up -d
 
 You have to edit it first and set `AWSACCESSKEYID` and `AWSSECRETACCESSKEY` and replace `S3_BUCKET_NAME` with the name of your S3 bucket.
 
