@@ -67,6 +67,8 @@ Note that, if you previously created the files in the S3 bucket with other tools
 
 Get [docker-compose](https://docs.docker.com/compose/install/)
 
+Create a shared mount on the host as described above.
+
 You can use the `docker-compose.yml` for starting the s3fs container with a simple command
 
 	docker-compose up -d
