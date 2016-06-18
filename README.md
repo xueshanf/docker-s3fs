@@ -35,7 +35,8 @@ Docker engine 1.10 added a new feature which allows containers to share the host
 		# chmod 400 /root/.s3fs
 
 **Run the S3fs container**
-***As a systemd service***
+
+**As a systemd service
 
 Create a systemd unit /etc/systemd/system/s3fs.service with the following content:
 
@@ -62,7 +63,7 @@ Now you should be able to see file system under /mnt/mydata on host. Changes you
 
 Note that, if you previously created the files in the S3 bucket with other tools such as s3cmd, awscli, the s3fs file system won't be able to get file ownership and mode correctly. You will see directories listed with permissions like  "d------". To fix this, you can correct the permissions under /mnt/mydata on host. s3fs will re-upload s3fs specific z-amz-metadata-* headers. 
 
-***With docker-compose***
+**With docker-compose**
 
 Get [docker-compose](https://docs.docker.com/compose/install/)
 
