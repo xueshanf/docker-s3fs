@@ -4,8 +4,8 @@ services:
   s3fs:
     image: xueshanf/s3fs:latest
     environment:
-      - AWSACCESSKEYID: FOOBAR
-      - AWSSECRETACCESSKEY: FOOBARBAZ
+      AWSACCESSKEYID: FOOBAR
+      AWSSECRETACCESSKEY: FOOBARBAZ
     cap_add:
       - MKNOD
       - SYS_ADMIN
