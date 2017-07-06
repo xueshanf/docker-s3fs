@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Xueshan Feng <xueshan.feng@gmail.com>
 
 ENV VERSION 1.80
