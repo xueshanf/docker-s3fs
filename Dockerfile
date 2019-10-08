@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Xueshan Feng <xueshan.feng@gmail.com>
+LABEL maintainer = "Xueshan Feng <xueshan.feng@gmail.com>"
 
 ENV VERSION 1.85
 
