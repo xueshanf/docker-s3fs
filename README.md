@@ -1,7 +1,7 @@
 docker-s3fs
 ===========
 
-**[S3fs][s3fs]** docker build for version 1.83.
+**[S3fs][s3fs]** docker build for version 1.91.
 
 - [Docker engine after 1.10](#docker-egnine-after-1.10)
 - [Docker engine before 1.10](#docker-engine-before-1.10)

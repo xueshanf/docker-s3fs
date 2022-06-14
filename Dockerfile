@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER Xueshan Feng <xueshan.feng@gmail.com>
 
-ENV VERSION 1.83
+ENV VERSION 1.91
 
 RUN apt-get update -qq
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
